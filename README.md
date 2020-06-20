@@ -7,6 +7,7 @@
 ## 安装
 
 ```
+$ go get github.com/jemygraw/wxwork-robot-cli
 $ go install github.com/jemygraw/wxwork-robot-cli
 ```
 
