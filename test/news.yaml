@@ -1,0 +1,12 @@
+- title: Fedora 开发者正在寻求更好管理退役软件包的方法
+  description: Fedora 开发者提议引入"fedora-retired-packages"的概念，以便在升级 Fedora 时删除已退役的软件包。
+  url: https://www.oschina.net/news/116490/fedora-33-retired-packages
+  picurl: https://static.oschina.net/uploads/space/2020/0617/042420_xxtH_2720166.png
+- title: Egret Engine 5.3.7 发布，改善现有项目开发体验
+  description: 今天白鹭引擎5.3.7版本正式发布，伴随着这个版本我们还同时发布了 Egret UI Editor 1.10 和 Egret Pro 1.6。 这次迭代的重点仍然是改善现有项目的开发体验
+  url: https://www.oschina.net/news/116532/egret-enging-5-3-7-released
+  picurl: https://static.oschina.net/new-osc/img/logo_osc_new.svg
+- title: Spring Tools 4.7.0 发布，Spring 开发工具
+  description: Spring Tools 4.7.0 发布了
+  url: https://www.oschina.net/news/116566/spring-tools-4-7-0-released
+  picurl: https://static.oschina.net/new-osc/img/logo_osc_new.svg
