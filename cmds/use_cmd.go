@@ -45,7 +45,7 @@ var UseCmd = cobra.Command{
 			wxRobot = v
 		}
 		bashProfileTempFilePath := filepath.Join(os.TempDir(), fmt.Sprintf("%s_bash_profile", robotName))
-		bashProfileTempFileContent := fmt.Sprintf(PS1ChangeFormat, fmt.Sprintf("%s-%s", robotName, wxRobot.Description), robotName, WXWorkRobotNameEnv)
+		bashProfileTempFileContent := fmt.Sprintf(PS1ChangeFormat, fmt.Sprintf("%s-%s", robotName, wxRobot.Description), WXWorkRobotNameEnv, robotName)
 		if writeErr := ioutil.WriteFile(bashProfileTempFilePath, []byte(bashProfileTempFileContent), 0644); writeErr != nil {
 			fmt.Println("Err: write robot bash profile error,", writeErr.Error())
 			os.Exit(1)
