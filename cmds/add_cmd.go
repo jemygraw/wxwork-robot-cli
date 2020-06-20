@@ -36,42 +36,42 @@ var AddCmd = cobra.Command{
 			os.Exit(1)
 		}
 		// try to write the user profile
-		if wErr := writeUserProfile(robotName, robotDescription, robotHookURL); wErr != nil {
-			fmt.Println("Err: write profile error,", wErr.Error())
+		if wErr := writeRobotProfile(robotName, robotDescription, robotHookURL); wErr != nil {
+			fmt.Println("Err:", wErr.Error())
 			os.Exit(1)
 		}
 	},
 }
 
-func writeUserProfile(robotName, robotDescription, robotHookURL string) (err error) {
+func writeRobotProfile(robotName, robotDescription, robotHookURL string) (err error) {
 	currentUser, getErr := user.Current()
 	if getErr != nil {
 		err = fmt.Errorf("get current user error, %s", getErr.Error())
 		return
 	}
-	userProfileDir := filepath.Join(currentUser.HomeDir, ".wxwork")
-	if mkdirErr := os.MkdirAll(userProfileDir, 0755); mkdirErr != nil {
-		err = fmt.Errorf("mkdir for user profile error, %s", mkdirErr.Error())
+	robotProfileDir := filepath.Join(currentUser.HomeDir, ".wxwork")
+	if mkdirErr := os.MkdirAll(robotProfileDir, 0755); mkdirErr != nil {
+		err = fmt.Errorf("mkdir for robot profile error, %s", mkdirErr.Error())
 		return
 	}
-	userProfileFilePath := filepath.Join(userProfileDir, "robots.json")
-	// try to read the config file
+	robotProfileFilePath := filepath.Join(robotProfileDir, "robots.json")
+	// try to read the robot profile file
 	var wxworkRobots map[string]WxWorkRobot
-	userProfileData, readErr := ioutil.ReadFile(userProfileFilePath)
+	robotProfileData, readErr := ioutil.ReadFile(robotProfileFilePath)
 	if readErr == nil {
-		json.Unmarshal(userProfileData, &wxworkRobots)
+		json.Unmarshal(robotProfileData, &wxworkRobots)
 	}
 	if wxworkRobots == nil {
 		wxworkRobots = make(map[string]WxWorkRobot)
 	}
-	// append the new robot
+	// add the new robot or overwrite the old one
 	wxworkRobots[robotName] = WxWorkRobot{
 		Description: robotDescription,
 		HookURL:     base64.StdEncoding.EncodeToString([]byte(robotHookURL)),
 	}
-	userProfileData, _ = json.Marshal(&wxworkRobots)
-	if writeErr := ioutil.WriteFile(userProfileFilePath, userProfileData, 0644); writeErr != nil {
-		err = fmt.Errorf("write user profile error, %s", writeErr.Error())
+	robotProfileData, _ = json.Marshal(&wxworkRobots)
+	if writeErr := ioutil.WriteFile(robotProfileFilePath, robotProfileData, 0644); writeErr != nil {
+		err = fmt.Errorf("write robot profile file error, %s", writeErr.Error())
 		return
 	}
 	return

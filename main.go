@@ -10,7 +10,10 @@ import (
 var rootCmd cobra.Command
 
 func init() {
-	rootCmd.AddCommand(&cmds.AddCmd)
+	rootCmd.AddCommand(
+		&cmds.AddCmd,
+		&cmds.UseCmd,
+	)
 }
 func main() {
 	if err := rootCmd.Execute(); err != nil {
