@@ -13,8 +13,9 @@ import (
 // use the environment variable to temporarily change the shell prompt
 // export PS1='%{$fg_bold[green]%}WXRobot:%{$reset_color%}%{$fg_bold[red]%} (<robot_name>) %{$reset_color%}${ret_status}%{$fg[green]%}%p%{$reset_color%}'
 
+const WXWorkRobotNameEnv = "WXWORK_ROBOT_NAME"
 const PS1ChangeFormat = `export PS1='%%{$fg_bold[green]%%}WXRobot:%%{$reset_color%%}%%{$fg_bold[red]%%} (%s) %%{$reset_color%%}${ret_status}%%{$fg[green]%%}%%p%%{$reset_color%%}'
-export WXWORK_ROBOT_NAME=%s
+export %s=%s
 `
 
 var UseCmd = cobra.Command{
@@ -30,13 +31,21 @@ var UseCmd = cobra.Command{
 
 		robotName := args[0]
 		// create a temp file with a base_profile to change shell prompt
-		wxRobot, getErr := readRobotProfile(robotName)
+		wxRobotProfiles, getErr := readRobotProfiles()
 		if getErr != nil {
 			fmt.Println("Err:", getErr.Error())
 			os.Exit(1)
 		}
+
+		var wxRobot WxWorkRobotProfile
+		if v, exists := wxRobotProfiles[robotName]; !exists {
+			fmt.Println("Err: robot profile not found, please add it first")
+			os.Exit(1)
+		} else {
+			wxRobot = v
+		}
 		bashProfileTempFilePath := filepath.Join(os.TempDir(), fmt.Sprintf("%s_bash_profile", robotName))
-		bashProfileTempFileContent := fmt.Sprintf(PS1ChangeFormat, fmt.Sprintf("%s-%s", robotName, wxRobot.Description), robotName)
+		bashProfileTempFileContent := fmt.Sprintf(PS1ChangeFormat, fmt.Sprintf("%s-%s", robotName, wxRobot.Description), robotName, WXWorkRobotNameEnv)
 		if writeErr := ioutil.WriteFile(bashProfileTempFilePath, []byte(bashProfileTempFileContent), 0644); writeErr != nil {
 			fmt.Println("Err: write robot bash profile error,", writeErr.Error())
 			os.Exit(1)
@@ -45,30 +54,23 @@ var UseCmd = cobra.Command{
 	},
 }
 
-func readRobotProfile(robotName string) (wxRobot WxWorkRobot, err error) {
+func readRobotProfiles() (wxRobotProfiles map[string]WxWorkRobotProfile, err error) {
 	currentUser, getErr := user.Current()
 	if getErr != nil {
 		err = fmt.Errorf("get current user error, %s", getErr.Error())
 		return
 	}
-	robotProfileDir := filepath.Join(currentUser.HomeDir, ".wxwork")
-	robotProfileFilePath := filepath.Join(robotProfileDir, "robots.json")
+	wxRobotProfileDir := filepath.Join(currentUser.HomeDir, ".wxwork")
+	wxRobotProfileFilePath := filepath.Join(wxRobotProfileDir, "robots.json")
 	// try to read the robot profile file
-	var wxworkRobots map[string]WxWorkRobot
-	robotProfileData, readErr := ioutil.ReadFile(robotProfileFilePath)
+	robotProfileData, readErr := ioutil.ReadFile(wxRobotProfileFilePath)
 	if readErr != nil {
-		err = fmt.Errorf("read robot profile error, %s", readErr.Error())
+		err = fmt.Errorf("read robot profiles error, %s", readErr.Error())
 		return
 	}
-	if parseErr := json.Unmarshal(robotProfileData, &wxworkRobots); parseErr != nil {
-		err = fmt.Errorf("parse robot profile error, %s", parseErr.Error())
+	if parseErr := json.Unmarshal(robotProfileData, &wxRobotProfiles); parseErr != nil {
+		err = fmt.Errorf("parse robot profiles error, %s", parseErr.Error())
 		return
-	}
-	if v, exists := wxworkRobots[robotName]; !exists {
-		err = fmt.Errorf("robot not found by the specified name")
-		return
-	} else {
-		wxRobot = v
 	}
 	return
 }

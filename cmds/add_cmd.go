@@ -1,7 +1,6 @@
 package cmds
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
@@ -9,19 +8,18 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"strings"
 )
 
-type WxWorkRobot struct {
+type WxWorkRobotProfile struct {
 	Description string `json:"description"`
-	HookURL     string `json:"hook_url"`
+	HookKey     string `json:"hook_key"`
 }
 
 var AddCmd = cobra.Command{
 	Use:     "add",
-	Short:   "Add a new robot with name, description and hookURL",
-	Long:    "添加一个新的机器人或者覆盖已有机器人的信息，需要指定名称，描述和Hook URL",
-	Example: "$ wxrobot add <name> <description> <hookURL>",
+	Short:   "Add a new robot with name, description and hookKey",
+	Long:    "添加一个新的机器人或者覆盖已有机器人的信息，需要指定名称，描述和Hook URL地址中的Key",
+	Example: "$ wxrobot add <name> <description> <hookKey>",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 3 {
 			cmd.Help()
@@ -29,48 +27,43 @@ var AddCmd = cobra.Command{
 		}
 		robotName := args[0]
 		robotDescription := args[1]
-		robotHookURL := args[2]
-
-		if !strings.HasPrefix(robotHookURL, "https") {
-			fmt.Println("Err: invalid robot hook url")
-			os.Exit(1)
-		}
+		robotHookKey := args[2]
 		// try to write the user profile
-		if wErr := writeRobotProfile(robotName, robotDescription, robotHookURL); wErr != nil {
+		if wErr := writeRobotProfile(robotName, robotDescription, robotHookKey); wErr != nil {
 			fmt.Println("Err:", wErr.Error())
 			os.Exit(1)
 		}
 	},
 }
 
-func writeRobotProfile(robotName, robotDescription, robotHookURL string) (err error) {
+func writeRobotProfile(robotName, robotDescription, robotHookKey string) (err error) {
 	currentUser, getErr := user.Current()
 	if getErr != nil {
 		err = fmt.Errorf("get current user error, %s", getErr.Error())
 		return
 	}
-	robotProfileDir := filepath.Join(currentUser.HomeDir, ".wxwork")
-	if mkdirErr := os.MkdirAll(robotProfileDir, 0755); mkdirErr != nil {
+	wxRobotProfileDir := filepath.Join(currentUser.HomeDir, ".wxwork")
+	if mkdirErr := os.MkdirAll(wxRobotProfileDir, 0755); mkdirErr != nil {
 		err = fmt.Errorf("mkdir for robot profile error, %s", mkdirErr.Error())
 		return
 	}
-	robotProfileFilePath := filepath.Join(robotProfileDir, "robots.json")
+	wxRobotProfileFilePath := filepath.Join(wxRobotProfileDir, "robots.json")
 	// try to read the robot profile file
-	var wxworkRobots map[string]WxWorkRobot
-	robotProfileData, readErr := ioutil.ReadFile(robotProfileFilePath)
+	var wxworkRobotProfiles map[string]WxWorkRobotProfile
+	robotProfileData, readErr := ioutil.ReadFile(wxRobotProfileFilePath)
 	if readErr == nil {
-		json.Unmarshal(robotProfileData, &wxworkRobots)
+		json.Unmarshal(robotProfileData, &wxworkRobotProfiles)
 	}
-	if wxworkRobots == nil {
-		wxworkRobots = make(map[string]WxWorkRobot)
+	if wxworkRobotProfiles == nil {
+		wxworkRobotProfiles = make(map[string]WxWorkRobotProfile)
 	}
 	// add the new robot or overwrite the old one
-	wxworkRobots[robotName] = WxWorkRobot{
+	wxworkRobotProfiles[robotName] = WxWorkRobotProfile{
 		Description: robotDescription,
-		HookURL:     base64.StdEncoding.EncodeToString([]byte(robotHookURL)),
+		HookKey:     robotHookKey,
 	}
-	robotProfileData, _ = json.Marshal(&wxworkRobots)
-	if writeErr := ioutil.WriteFile(robotProfileFilePath, robotProfileData, 0644); writeErr != nil {
+	robotProfileData, _ = json.Marshal(&wxworkRobotProfiles)
+	if writeErr := ioutil.WriteFile(wxRobotProfileFilePath, robotProfileData, 0644); writeErr != nil {
 		err = fmt.Errorf("write robot profile file error, %s", writeErr.Error())
 		return
 	}

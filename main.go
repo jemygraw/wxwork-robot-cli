@@ -13,6 +13,8 @@ func init() {
 	rootCmd.AddCommand(
 		&cmds.AddCmd,
 		&cmds.UseCmd,
+		&cmds.SendCmd,
+		&cmds.ListCmd,
 	)
 }
 func main() {
