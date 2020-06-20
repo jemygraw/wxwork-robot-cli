@@ -76,7 +76,7 @@ $ wxwork-robot-cli send [--robot|-r] <name> [--file|-f] '<file path>'
 $ wxwork-robot-cli send [--robot|-r] <name> [--news|-n] '<news file>'
 ```
 
-这个图片消息比较复杂，因为字段比较多，所以这里的 `<news file>` 文件里面需要按照下面的格式定义好。
+这个图文消息比较复杂，因为字段比较多，所以这里的 `<news file>` 文件里面需要按照下面的格式定义好。
 
 ```
 - title: <title 1>
